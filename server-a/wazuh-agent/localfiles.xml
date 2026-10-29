@@ -1,0 +1,9 @@
+<!-- Insert these children into the existing ossec_config, not as a second root. -->
+<localfile>
+  <location>/var/log/helpdesk-ai/vulnerable/security.jsonl</location>
+  <log_format>json</log_format>
+</localfile>
+<localfile>
+  <location>/var/log/helpdesk-ai/secure/security.jsonl</location>
+  <log_format>json</log_format>
+</localfile>

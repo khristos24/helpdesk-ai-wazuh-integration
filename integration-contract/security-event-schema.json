@@ -1,0 +1,279 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HelpDesk AI security event",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+    },
+    "application": {
+      "const": "helpdesk-ai"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "event_type": {
+      "enum": [
+        "user_message_received",
+        "knowledge_document_retrieved",
+        "model_tool_requested",
+        "authorization_decision",
+        "tool_executed",
+        "model_context_sensitive_exposure",
+        "ticket_write_persisted",
+        "chat_history_access",
+        "staff_note_access",
+        "final_answer_disclosure_verified",
+        "model_request_failed"
+      ]
+    },
+    "request_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "actor_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_.:@/-]+$"
+    },
+    "actor_role": {
+      "enum": [
+        "customer",
+        "staff"
+      ]
+    },
+    "app_mode": {
+      "enum": [
+        "vulnerable",
+        "secure"
+      ]
+    },
+    "execution_source": {
+      "enum": [
+        "live_model",
+        "dispatcher_test",
+        "recorded_replay"
+      ]
+    },
+    "tool_name": {
+      "enum": [
+        null,
+        "get_profile",
+        "get_my_profile",
+        "list_tickets",
+        "list_my_tickets",
+        "get_ticket",
+        "update_ticket",
+        "search_knowledge_base",
+        "unknown"
+      ]
+    },
+    "requested_resource_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_.:@/-]+$"
+    },
+    "resource_owner_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_.:@/-]+$"
+    },
+    "authorization_result": {
+      "enum": [
+        "allowed",
+        "denied",
+        "not_evaluated"
+      ]
+    },
+    "execution_result": {
+      "enum": [
+        "success",
+        "failed",
+        "not_executed"
+      ]
+    },
+    "sensitive_fields_exposed_to_model": {
+      "type": "boolean"
+    },
+    "disclosure_confirmed": {
+      "type": "boolean"
+    },
+    "data_classification": {
+      "enum": [
+        "metadata",
+        "support",
+        "private_profile",
+        "staff_only",
+        "private_chat"
+      ]
+    },
+    "reason_code": {
+      "enum": [
+        "message_metadata_only",
+        "model_requested_tool",
+        "unknown_tool",
+        "invalid_arguments",
+        "lab_authorization_bypass",
+        "session_scoped",
+        "ownership_or_staff_allowed",
+        "resource_not_accessible",
+        "database_operation_succeeded",
+        "database_operation_failed",
+        "document_retrieved",
+        "sensitive_tool_result_submitted",
+        "sensitive_history_submitted",
+        "synthetic_marker_in_final_answer",
+        "history_returned",
+        "staff_notes_returned",
+        "model_unavailable"
+      ]
+    },
+    "attack_indicator": {
+      "enum": [
+        "none",
+        "cross_user_access",
+        "cross_user_write",
+        "excessive_fields",
+        "staff_note_exposure",
+        "suspected_indirect_injection"
+      ]
+    },
+    "scenario_id": {
+      "enum": [
+        "S01",
+        "S02",
+        "S03",
+        "S04",
+        "S05",
+        "S06"
+      ]
+    },
+    "document_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_.:@/-]+$"
+    },
+    "model_id": {
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_.:@/-]+$"
+    },
+    "event_stage": {
+      "enum": [
+        "request",
+        "authorization",
+        "execution",
+        "model_context",
+        "response"
+      ]
+    },
+    "latency_ms": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "timestamp",
+    "application",
+    "schema_version",
+    "event_id",
+    "event_type",
+    "request_id",
+    "actor_id",
+    "actor_role",
+    "app_mode",
+    "execution_source",
+    "tool_name",
+    "requested_resource_id",
+    "resource_owner_id",
+    "authorization_result",
+    "execution_result",
+    "sensitive_fields_exposed_to_model",
+    "disclosure_confirmed",
+    "data_classification",
+    "reason_code",
+    "attack_indicator"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "disclosure_confirmed": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "event_type": {
+            "const": "final_answer_disclosure_verified"
+          },
+          "execution_result": {
+            "const": "success"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "authorization_result": {
+            "const": "denied"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "execution_result": {
+            "const": "not_executed"
+          },
+          "disclosure_confirmed": {
+            "const": false
+          },
+          "sensitive_fields_exposed_to_model": {
+            "const": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "final_answer_disclosure_verified"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "disclosure_confirmed": {
+            "const": true
+          }
+        }
+      }
+    }
+  ]
+}
