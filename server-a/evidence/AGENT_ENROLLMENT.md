@@ -30,6 +30,8 @@ agent connected:
 |---|---|---|
 | Vulnerable | `449a7a59-2617-4abe-a69f-451629515b8c` | `dispatcher_test` |
 | Secure | `d5cfdae2-49da-4e21-a795-626ff32dee24` | `dispatcher_test` |
+| Vulnerable | `71d181c6-9744-46ff-bdf2-735af8b58516` | `live_model` |
+| Secure | `e27a9a2d-3c2a-4463-8774-9c9988f3a601` | `live_model` |
 
 The vulnerable request includes successful cross-user read/write test evidence.
 The secure request includes the corresponding authorization denials and allowed
@@ -37,12 +39,25 @@ own-resource controls. These deterministic events are appropriate for checking
 collection, JSON decoding, rule predicates, and request-ID correlation. They are
 not `live_model` exploit evidence and must not be presented as such.
 
+The fresh vulnerable live request has run ID
+`1065af9e-89c5-4af3-a7da-4a1e961bb1ed` and produced successful cross-user
+`get_profile` execution, sensitive model-context exposure, and verified final
+disclosure. Its evidence bundle is `f80c6589-3913-4900-8532-5141afa9b30a`.
+
+The fresh secure live request has run ID
+`1aff06d8-2f3d-4b53-bb62-15d9cf57a11e` and produced only an allowed knowledge-base
+lookup, with no sensitive-context or verified-disclosure event. Its evidence bundle
+is `66cae3d9-fe2b-4447-ba0e-abcaed4aaf01`. The separate secure dispatcher request
+above remains the backend proof that a forced legacy cross-user profile request is
+denied before execution.
+
 ## Required Server B confirmation
 
 Server B must now provide:
 
 1. The manager-assigned agent ID and connected status for `helpdesk-ai-lab`.
-2. Proof that both request IDs reached manager archives or indexed events.
+2. Proof that all four request IDs reached manager archives or indexed events,
+   prioritizing the two `live_model` IDs for the end-to-end demonstration.
 3. Creation and assignment of the `ai-security-lab` group.
 4. Positive and negative rule-test results against contract version `1.0`.
 5. A custom alert carrying the same genuine request ID, agent ID, rule ID,
